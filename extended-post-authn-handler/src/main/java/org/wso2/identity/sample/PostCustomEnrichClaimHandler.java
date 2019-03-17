@@ -115,6 +115,15 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         return isEnrichRequestTriggered;
     }
 
+    /**
+     * Handle post authentication request where redirect to get missing claim values if its needed.
+     *
+     * @param request
+     * @param response
+     * @param context
+     * @return
+     * @throws PostAuthenticationFailedException
+     */
     private PostAuthnHandlerFlowStatus handleCustomPostAuthenticationRequest(HttpServletRequest request,
             HttpServletResponse response, AuthenticationContext context) throws PostAuthenticationFailedException {
 
@@ -125,11 +134,9 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
                 log.debug("Request is successfully authenticated");
             }
 
-            context.getSequenceConfig().setCompleted(true);
             if (Constants.IS_ENRICHMENT_TRIGGERED_ENABLED) {
-                String username = getAuthenticatedUser(context).getUserName();
                 // Get missing claims from external APIs.
-                String missingClaims = getMissingClaims(username, context, request, response);
+                String missingClaims = getMissingClaims(context, request, response);
 
                 // Getting required criteria to redirect, to get values for missing claims.
                 Map<String, String> conditions = getRequiredConditionsToRedirect(context);
@@ -149,11 +156,19 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         return PostAuthnHandlerFlowStatus.SUCCESS_COMPLETED;
     }
 
+    /**
+     * Redirect to get missing claims values.
+     *
+     * @param response
+     * @param context
+     * @param missingClaims
+     * @throws PostAuthenticationFailedException
+     */
     private void redirectToGetMissingClaims(HttpServletResponse response, AuthenticationContext context,
             String missingClaims) throws PostAuthenticationFailedException {
 
         if (log.isDebugEnabled()) {
-            log.debug("Mandatory claims missing for the application : " + missingClaims);
+            log.debug("Mandatory claims missing, " + missingClaims);
         }
         try {
             URIBuilder uriBuilder = new URIBuilder(
@@ -177,6 +192,13 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         }
     }
 
+    /**
+     * Handle post authentication response, extract missing claims and values from response and set it as local claims.
+     *
+     * @param request
+     * @param response
+     * @param context
+     */
     private void handleCustomPostAuthenticationHandlerResponse(HttpServletRequest request, HttpServletResponse response,
             AuthenticationContext context) {
 
@@ -203,7 +225,15 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         context.setProperty(FrameworkConstants.UNFILTERED_LOCAL_CLAIM_VALUES, localClaimValues);
     }
 
-    private String getMissingClaims(String subjectIdentifier, AuthenticationContext context, HttpServletRequest request,
+    /**
+     * Call to external APIs to get missing claims details for a user.
+     *
+     * @param context
+     * @param request
+     * @param response
+     * @return
+     */
+    private String getMissingClaims(AuthenticationContext context, HttpServletRequest request,
             HttpServletResponse response) {
 
         // Check with external endpoint and validate which are missing user claims
@@ -214,25 +244,25 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         return TEST_CLAIMS;
     }
 
+    /**
+     * Get authenticated user from context.
+     *
+     * @param authenticationContext
+     * @return
+     */
     private AuthenticatedUser getAuthenticatedUser(AuthenticationContext authenticationContext) {
 
         AuthenticatedUser user = authenticationContext.getSequenceConfig().getAuthenticatedUser();
         return user;
     }
 
-    private UserRealm getUserRealm(String tenantDomain) throws PostAuthenticationFailedException {
-
-        UserRealm realm;
-        try {
-            realm = AnonymousSessionUtil.getRealmByTenantDomain(PostCustomHandlerServiceComponent.getRegistryService(),
-                    PostCustomHandlerServiceComponent.getRealmService(), tenantDomain);
-        } catch (CarbonException e) {
-            throw new PostAuthenticationFailedException("Error while handling enrich claims",
-                    "Error occurred while retrieving the Realm for " + tenantDomain + " to handle local claims", e);
-        }
-        return realm;
-    }
-
+    /**
+     * Get required conditions to redirect to get the missing claims.
+     *
+     * @param context
+     * @return
+     * @throws PostAuthenticationFailedException
+     */
     private Map<String, String> getRequiredConditionsToRedirect(AuthenticationContext context)
             throws PostAuthenticationFailedException {
 
@@ -269,6 +299,14 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
         return conditions;
     }
 
+    /**
+     * Check whether user is exist in user store or not.
+     *
+     * @param authenticatedUser
+     * @param externalIdPConfig
+     * @return
+     * @throws PostAuthenticationFailedException
+     */
     private boolean isUserExist(AuthenticatedUser authenticatedUser, ExternalIdPConfig externalIdPConfig)
             throws PostAuthenticationFailedException {
 
@@ -286,5 +324,25 @@ public class PostCustomEnrichClaimHandler extends AbstractPostAuthnHandler {
             new FrameworkException("Error while checking user existence", e);
         }
         return isUserExist;
+    }
+
+    /**
+     * Get user realm.
+     *
+     * @param tenantDomain
+     * @return
+     * @throws PostAuthenticationFailedException
+     */
+    private UserRealm getUserRealm(String tenantDomain) throws PostAuthenticationFailedException {
+
+        UserRealm realm;
+        try {
+            realm = AnonymousSessionUtil.getRealmByTenantDomain(PostCustomHandlerServiceComponent.getRegistryService(),
+                    PostCustomHandlerServiceComponent.getRealmService(), tenantDomain);
+        } catch (CarbonException e) {
+            throw new PostAuthenticationFailedException("Error while handling enrich claims",
+                    "Error occurred while retrieving the Realm for " + tenantDomain + " to handle local claims", e);
+        }
+        return realm;
     }
 }

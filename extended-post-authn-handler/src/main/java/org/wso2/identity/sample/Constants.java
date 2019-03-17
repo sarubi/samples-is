@@ -17,6 +17,9 @@
  */
 package org.wso2.identity.sample;
 
+/**
+ * Constants used for custom post authentication handler.
+ */
 public class Constants {
 
     public static final String ENRICHMENT_TRIGGERED = "enrichment_triggered";
