@@ -1,7 +1,7 @@
 ## Custom Post Authentication Handler
 
 ### Introduction / Use case.
-This custom post authentication handler can be used get the missing mandatory claim values before doing the JIT 
+This custom post authentication handler can be used to get the missing mandatory claim values before doing the JIT 
 provisioning. 
 
 ### Applicable product versions.
@@ -22,15 +22,15 @@ in the identity.xml file located at **<IS_Home>/repository/conf/identity**.
  ### Testing the project.
 Configure the federated login authentication as below, 
 https://docs.wso2.com/display/IS570/Logging+in+to+your+application+via+Identity+Server+using+Facebook+Credentials
-1. Configure Facebook as a IdP with JIT provisioning
+1. Configure Facebook as an IdP with JIT provisioning
 2. Configured Travelocity as a SP
 3. Added facebook as the login option for travelocity SP
 4. Enabled "Assert identity using mapped local subject identifier" flag in the travelocity SP
 5. Added following claims as a requested claim in travelocity SP
-    http://wso2.org/claims/emailaddress	
-    http://wso2.org/claims/fullname
-    http://wso2.org/claims/country	
-    http://wso2.org/claims/mobile	
+    http://wso2.org/claims/emailaddress,	
+    http://wso2.org/claims/fullname,
+    http://wso2.org/claims/country,	
+    http://wso2.org/claims/mobile,	
     http://wso2.org/claims/organization	
 
 Test the flow,
@@ -44,4 +44,4 @@ Test the flow,
 7. Go to management console and login as "admin/admin"
 8. Update the federated user profile with organization entry. 
 9. Re-login to travelocity SP.
-10. Now returned to travelocity, with all requested claims including injected organization value. 
+10. Now in the travelocity all requested claims will be listed, including injected organization value. 
