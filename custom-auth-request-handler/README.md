@@ -1,10 +1,12 @@
 ## Request Attribute Eliminator
 
 ### Introduction / Use case.
-This custom class is to remove the "authenticators" query parameter if exits in the
-/authenticationendpoint/login.do request. Then redirect to the login page. However need to customize the login page 
-that is in authentication web application to handle this this type of login request and implement a custom login to 
-return the authenticators list.
+This custom class is to remove the "authenticators" query parameter if exits in the login URL where the URL is defined 
+in application-authentication.xml under AuthenticationEndpointURL property.
+<AuthenticationEndpointURL>/authenticationendpoint/login.do</AuthenticationEndpointURL>
+After removing the authentication list, we redirect to the login page. However need to customize the login page that 
+is in authentication web application to handle this this type of login request and needs implement a custom login 
+to return the authenticators list.
 
 ### Applicable product versions.
 Tested with WSO2 IS 5.2.0
